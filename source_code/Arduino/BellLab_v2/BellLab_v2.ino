@@ -1,8 +1,27 @@
 /*  NETPIE ESP32 basic sample                            */
-/*  More information visit : https://netpie.io             */
+/*  More information visit : https://netpie.io           */
 
 #include <WiFi.h>
 #include "MicroGear.h"
+
+//----- Bell Lab v2 ----- [ 1/n ] ------------------------
+//#define ENVIRONMENTS_BELL
+//#define ENVIRONMENTS_JAB
+//#define ENVIRONMENTS_EAK
+
+#ifdef  ENVIRONMENTS_BELL
+
+#endif
+
+#ifdef  ENVIRONMENTS_JAB
+
+#endif
+
+#ifdef  ENVIRONMENTS_EAK
+
+#endif
+
+//--------------------------------------------------------
 
 const char* ssid     = <WIFI_SSID>;
 const char* password = <WIFI_KEY>;
@@ -10,6 +29,7 @@ const char* password = <WIFI_KEY>;
 #define APPID   <APPID>
 #define KEY     <APPKEY>
 #define SECRET  <APPSECRET>
+
 #define ALIAS   "esp8266"
 
 WiFiClient client;
@@ -45,7 +65,7 @@ void onConnected(char *attribute, uint8_t* msg, unsigned int msglen) {
     microgear.setAlias(ALIAS);
 }
 
-//----- Bell Lab v2 ----- [ 1/n ] ------------------------
+//----- Bell Lab v2 ----- [ 2/n ] ------------------------
 unsigned long t_old = 0;
 int d_raw = 0;
 int d_val = 0;
@@ -69,7 +89,7 @@ void serialTest() {
 
 void setup() {
 
-//----- Bell Lab v2 ----- [ 2/n ] ------------------------
+//----- Bell Lab v2 ----- [ 3/n ] ------------------------
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(115200);
