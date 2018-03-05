@@ -2,7 +2,7 @@
 /*  More information visit : https://netpie.io             */
 
 #include <WiFi.h>
-#include <MicroGear.h>
+#include "MicroGear.h"
 
 const char* ssid     = <WIFI_SSID>;
 const char* password = <WIFI_KEY>;
@@ -45,8 +45,40 @@ void onConnected(char *attribute, uint8_t* msg, unsigned int msglen) {
     microgear.setAlias(ALIAS);
 }
 
+//----- Bell Lab v2 ----- [ 1/n ] ------------------------
+unsigned long t_old = 0;
+int d_raw = 0;
+int d_val = 0;
+
+void plotRaw() {
+  Serial.println(d_raw);
+}
+
+void plotVolt() {
+  Serial.println((float)d_val / 1000);
+}
+
+void serialTest() {
+  Serial.print(d_raw);
+  Serial.print(" ");
+  Serial.print(d_val);
+  Serial.println();
+}
+
+//--------------------------------------------------------
 
 void setup() {
+
+//----- Bell Lab v2 ----- [ 2/n ] ------------------------
+  pinMode(LED_BUILTIN, OUTPUT);
+
+  Serial.begin(115200);
+  Serial.println("\nBell Lab v2 starting...");
+
+  analogReadResolution(12);
+
+//--------------------------------------------------------
+
     /* Add Event listeners */
 
     /* Call onMsghandler() when new message arraives */
@@ -60,9 +92,6 @@ void setup() {
 
     /* Call onConnected() when NETPIE connection is established */
     microgear.on(CONNECTED,onConnected);
-
-    Serial.begin(115200);
-    Serial.println("Starting...");
 
     /* Initial WIFI, this is just a basic method to configure WIFI on ESP8266.                       */
     /* You may want to use other method that is more complicated, but provide better user experience */
