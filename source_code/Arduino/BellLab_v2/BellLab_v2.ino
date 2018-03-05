@@ -6,12 +6,13 @@
 
 //----- Bell Lab v2 ----- [ 1/4 ] ------------------------
 //#define ENVIRONMENTS_BELL
-#define ENVIRONMENTS_JAB
-//#define ENVIRONMENTS_EAK
+//#define ENVIRONMENTS_JAB
+#define ENVIRONMENTS_EAK
 
 #ifdef  ENVIRONMENTS_BELL
 
 #endif
+
 
 #ifdef  ENVIRONMENTS_JAB
 
@@ -24,13 +25,22 @@ const char* password = "11111111";
 
 #endif
 
+
 #ifdef  ENVIRONMENTS_EAK
+
+const char* ssid     = "Jab";
+const char* password = "11111111";
+
+#define APPID   "xBell"
+#define KEY     "KFxy9n0U2QrydH0"
+#define SECRET  "yA9SIfLr39OuF4u57UcRgsQ2S"
 
 #endif
 
 //--------------------------------------------------------
 
-#define ALIAS   "esp8266"
+#define ALIAS               "BELL_LAB"
+#define ALIAS_VOLT          "BELL_LAB/Volt"
 
 WiFiClient client;
 
@@ -39,30 +49,36 @@ MicroGear microgear(client);
 
 /* If a new message arrives, do this */
 void onMsghandler(char *topic, uint8_t* msg, unsigned int msglen) {
-    Serial.print("Incoming message --> ");
-    msg[msglen] = '\0';
-    Serial.println((char *)msg);
+  Serial.print("Incoming message --> ");
+  msg[msglen] = '\0';
+  Serial.println((char *)msg);
 }
 
 void onFoundgear(char *attribute, uint8_t* msg, unsigned int msglen) {
-    Serial.print("Found new member --> ");
-    for (int i=0; i<msglen; i++)
-        Serial.print((char)msg[i]);
-    Serial.println();  
+  Serial.print("Found new member --> ");
+
+  for (int i = 0; i < msglen; i++) {
+    Serial.print((char)msg[i]);
+  }
+
+  Serial.println();  
 }
 
 void onLostgear(char *attribute, uint8_t* msg, unsigned int msglen) {
-    Serial.print("Lost member --> ");
-    for (int i=0; i<msglen; i++)
-        Serial.print((char)msg[i]);
-    Serial.println();
+  Serial.print("Lost member --> ");
+  
+  for (int i=0; i<msglen; i++) {
+    Serial.print((char)msg[i]);
+  }
+  
+  Serial.println();
 }
 
 /* When a microgear is connected, do this */
 void onConnected(char *attribute, uint8_t* msg, unsigned int msglen) {
-    Serial.println("Connected to NETPIE...");
-    /* Set the alias of this microgear ALIAS */
-    microgear.setAlias(ALIAS);
+  Serial.println("Connected to NETPIE...");
+  /* Set the alias of this microgear ALIAS */
+  microgear.setAlias(ALIAS);
 }
 
 //----- Bell Lab v2 ----- [ 2/4 ] ------------------------
@@ -99,64 +115,77 @@ void setup() {
 
 //--------------------------------------------------------
 
-    /* Add Event listeners */
+  /* Add Event listeners */
 
-    /* Call onMsghandler() when new message arraives */
-    microgear.on(MESSAGE,onMsghandler);
+  /* Call onMsghandler() when new message arraives */
+  microgear.on(MESSAGE,onMsghandler);
 
-    /* Call onFoundgear() when new gear appear */
-    microgear.on(PRESENT,onFoundgear);
+  /* Call onFoundgear() when new gear appear */
+  microgear.on(PRESENT,onFoundgear);
 
-    /* Call onLostgear() when some gear goes offline */
-    microgear.on(ABSENT,onLostgear);
+  /* Call onLostgear() when some gear goes offline */
+  microgear.on(ABSENT,onLostgear);
 
-    /* Call onConnected() when NETPIE connection is established */
-    microgear.on(CONNECTED,onConnected);
+  /* Call onConnected() when NETPIE connection is established */
+  microgear.on(CONNECTED,onConnected);
 
-    /* Initial WIFI, this is just a basic method to configure WIFI on ESP8266.                       */
-    /* You may want to use other method that is more complicated, but provide better user experience */
-    if (WiFi.begin(ssid, password)) {
-        while (WiFi.status() != WL_CONNECTED) {
-            delay(500);
-            Serial.print(".");
-        }
+  /* Initial WIFI, this is just a basic method to configure WIFI on ESP8266.                       */
+  /* You may want to use other method that is more complicated, but provide better user experience */
+  if (WiFi.begin(ssid, password)) {
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
     }
+  }
 
-    Serial.println("WiFi connected");  
-    Serial.println("IP address: ");
-    Serial.println(WiFi.localIP());
+  Serial.println("WiFi connected");  
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 
-    /* Initial with KEY, SECRET and also set the ALIAS here */
-    microgear.init(KEY,SECRET,ALIAS);
+  /* Initial with KEY, SECRET and also set the ALIAS here */
+  microgear.init(KEY,SECRET,ALIAS);
 
-    /* connect to NETPIE to a specific APPID */
-    microgear.connect(APPID);
+  /* connect to NETPIE to a specific APPID */
+  microgear.connect(APPID);
 }
 
 void loop() {
-    /* To check if the microgear is still connected */
-    if (microgear.connected()) {
-        Serial.println("connected");
 
-        /* Call this method regularly otherwise the connection may be lost */
-        microgear.loop();
+//----- Bell Lab v2 ----- [ 4/4 ] ------------------------
+  if (microgear.connected() == 0) {
 
-        if (timer >= 1000) {
-            Serial.println("Publish...");
-
-            /* Chat with the microgear named ALIAS which is myself */
-            microgear.chat(ALIAS,"Hello");
-            timer = 0;
-        } 
-        else timer += 100;
+    if (timer < 50) {
+      timer++;
+    } else {
+      timer = 0;
+      Serial.println("Reconnect...");
+      microgear.connect(APPID);
     }
-    else {
-        Serial.println("connection lost, reconnect...");
-        if (timer >= 5000) {
-            microgear.connect(APPID);
-            timer = 0;
-        }
-        else timer += 100;
+
+  } else {
+
+    microgear.loop(); //<- Call this method regularly otherwise the connection may be lost
+
+    if (timer < 10) {
+      timer++;
+    } else {
+      timer = 0;
+
+      d_raw = analogRead(A0);
+      d_val = map(d_raw, 0, 4095, 0, 3300);
+
+      Serial.println(d_val);
+      microgear.chat(ALIAS_VOLT, d_val);
+      
     }
-    delay(100);
+
+  }
+
+  digitalWrite(LED_BUILTIN, LOW);
+  while ((micros() - t_old) < 100000); t_old = micros();
+  digitalWrite(LED_BUILTIN, HIGH);
+
+//--------------------------------------------------------
+
 }
+
