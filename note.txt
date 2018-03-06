@@ -39,6 +39,7 @@ Folder Tree
             - LabVIEW
             - Matlab
             - MCS-51
+            - NETPIE Freeboard
             - Perl
             - PHP5
             - PIC
